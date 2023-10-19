@@ -2,7 +2,9 @@
  * @jest-environment jsdom
  */
 
-const { game, newGame, showScore, addTurn, lightsOn, showTurns } = require("../game")
+jest.spyOn(window, "alert").mockImplementation(() => {})
+
+const { game, newGame, showScore, addTurn, lightsOn, showTurns, playerTurn } = require("../game")
 
 beforeAll(() => {
     let fs = require("fs");
@@ -31,6 +33,14 @@ describe("game object contains correct keys", () => {
     test("turnNumber key exists", () => {
         expect("turnNumber" in game).toBe(true);
     });
+    test("lastButton key exists", () => {
+        expect("lastButton" in game).toBe(true);
+        expect(game.lastButton).toEqual("");
+    });
+    test("turnInProgress key exists", () => {
+        expect("turnInProgress" in game).toBe(true);
+        expect(game.turnInProgress).toEqual(false);
+    });
 });
 
 describe("newGame works correctly", () => {
@@ -53,7 +63,15 @@ describe("newGame works correctly", () => {
     test("should display 0 for the element with the ID of score", () => {
         expect(document.getElementById("score").innerText).toEqual(0);
     });
+    // need to test if data-listener is set to true...
+    test("data-listener should be set to true", () => {
+        const elements = document.getElementsByClassName("circle");
+        for (let element of elements) {
+            expect(element.getAttribute("data-listener")).toBe("true");
+        }
+    });
 });
+
 
 describe("gameplay works correctly", () => {
     beforeEach(() => {
@@ -81,4 +99,24 @@ describe("gameplay works correctly", () => {
         showTurns();
         expect(game.turnNumber).toBe(0);
     });
-})
+    test("should increment score if turn is correct", () => {
+        game.playerMoves.push(game.currentGame[0]);
+        playerTurn();
+        expect(game.score).toBe(1);
+    });
+    test("should call alert if move is incorrect", () => {
+        game.playerMoves.push("wrong");
+        playerTurn();
+        expect(window.alert).toBeCalledWith("Wrong move!");
+    });
+    test("should check if turnInProgress is set to true while showTurns is called", () => {
+        showTurns();
+        expect(game.turnInProgress).toBe(true);
+    });
+    test("clicking during computer sequence should fail", () => {
+        showTurns();
+        game.lastButton = "";
+        document.getElementById("button2").click();
+        expect(game.lastButton).toEqual("");
+    });
+});
