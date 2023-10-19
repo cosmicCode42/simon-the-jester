@@ -4,7 +4,7 @@
  addTurn() function DONE
  showTurns() function DONE
  lightsOn() function DONE
- playerTurn() function
+ playerTurn() function DONE
  showScore() function DONE */
 
 let game = {
